@@ -1,4 +1,5 @@
 using JobBoardAPI.Data;
+using JobBoardAPI.Exceptions;
 using JobBoardAPI.Repositories;
 using JobBoardAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Register exception handler and problem details services
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
@@ -38,5 +43,9 @@ if (app.Environment.IsDevelopment())
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
+
+// Use the global exception handler
+app.UseExceptionHandler();
+
 app.MapControllers();
 app.Run();

@@ -19,32 +19,151 @@ namespace JobBoardAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateJobDto dto) 
+        public async Task<IActionResult> Create([FromBody] CreateJobDto dto)
         {
-            _logger.LogInformation("Create job request.");
+            _logger.LogInformation("Received create job request.");
 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try 
+            try
             {
-                _logger.LogInformation("Call create job service.");
+                _logger.LogInformation("Creating job with title: {Title}", dto.Title);
 
                 var result = await _jobService.CreateJobAsync(dto);
                 if (!result.Success)
                 {
-                    _logger.LogError("Job creation failed.");
-                    return StatusCode(500, new { Message = result.Message });
+                    _logger.LogWarning("Failed to create job. Reason: {Message}", result.Message);
+                    return StatusCode(400, new { Message = result.Message });
                 }
 
-                _logger.LogInformation("Job created successfully response.");
+                _logger.LogInformation("Job created successfully with title: {Title}", dto.Title);
                 return Ok(new { Message = result.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError("An internal server error occurred.");
+                _logger.LogError(ex, "Exception occurred while creating job with title: {Title}", dto.Title);
+                return StatusCode(500, new { Message = "An internal server error occurred. Please try again later." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            _logger.LogInformation("Received request to retrieve all jobs.");
+
+            try
+            {
+                var result = await _jobService.GetAllJobsAsync();
+                if (!result.Success)
+                {
+                    _logger.LogError("Failed to retrieve jobs. Reason: {Message}", result.Message);
+                    return StatusCode(500, new { message = result.Message });
+                }
+
+                _logger.LogInformation("Retrieved {Count} jobs.", result.Data?.Count ?? 0);
+                return Ok(new { message = result.Message, data = result.Data });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving jobs.");
+                return StatusCode(500, new { Message = "An internal server error occurred. Please try again later." });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            _logger.LogInformation("Received request to get job with ID: {Id}", id);
+
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid job ID: {Id}", id);
+                return BadRequest(new { message = "Invalid job ID." });
+            }
+
+            try
+            {
+                var result = await _jobService.GetJobByIdAsync(id);
+                if (!result.Success)
+                {
+                    _logger.LogWarning("Job not found with ID: {Id}", id);
+                    return NotFound(new { message = result.Message });
+                }
+
+                _logger.LogInformation("Successfully retrieved job with ID: {Id}", id);
+                return Ok(new { message = result.Message, data = result.Data });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving job with ID: {Id}", id);
+                return StatusCode(500, new { Message = "An internal server error occurred. Please try again later." });
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateJob([FromBody] UpdateJobDto dto)
+        {
+            _logger.LogInformation("Received update job request for ID: {Id}", dto.Id);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (dto.Id <= 0)
+            {
+                _logger.LogWarning("Invalid job ID: {Id}", dto.Id);
+                return BadRequest(new { message = "Invalid job ID." });
+            }
+
+            try
+            {
+                var result = await _jobService.UpdateJobAsync(dto);
+                if (!result.Success) 
+                {
+                    _logger.LogWarning("Failed to update job. Reason: {Message}", result.Message);
+                    return NotFound(new { message = result.Message });
+                }
+
+                _logger.LogInformation("Successfully updated job with ID: {Id}", dto.Id);
+                return Ok(new { message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while updating job with ID: {Id}", dto.Id);
+                return StatusCode(500, new { Message = "An internal server error occurred. Please try again later." });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteJob(int id)
+        {
+            _logger.LogInformation("Received delete job request for ID: {Id}", id);
+
+            if (id <= 0)
+            {
+                _logger.LogWarning("Invalid job ID: {Id}", id);
+                return BadRequest(new { message = "Invalid job ID." });
+            }
+
+            try
+            {
+                var result = await _jobService.DeleteJobAsync(id);
+                if (!result.Success)
+                {
+                    _logger.LogWarning("Failed to delete job with ID: {Id}. Reason: {Message}", id, result.Message);
+                    return NotFound(new { message = result.Message });
+                }
+
+                _logger.LogInformation("Successfully deleted job with ID: {Id}", id);
+                return Ok(new { message = result.Message });                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while deleting job with ID: {Id}", id);
                 return StatusCode(500, new { Message = "An internal server error occurred. Please try again later." });
             }
         }
