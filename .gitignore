@@ -31,3 +31,12 @@ obj/
 *.nupkg
 *.swp
 *.bak
+
+# Logs
+logs/
+*.log
+
+# wwwroot uploaded files (e.g., resumes, profile images)
+wwwroot/resumes/
+wwwroot/uploads/
+wwwroot/files/
