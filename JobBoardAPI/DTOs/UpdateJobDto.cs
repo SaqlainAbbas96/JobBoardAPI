@@ -4,22 +4,19 @@ namespace JobBoardAPI.DTOs
 {
     public class UpdateJobDto
     {
-        [Required]
-        public int Id { get; set; }
+        [StringLength(100, ErrorMessage = "Title must be under 100 characters.")]
+        public string? Title { get; set; }
 
-        [Required]
-        public string Title { get; set; }
+        [StringLength(4000, ErrorMessage = "Description must be under 1000 characters.")]
+        public string? Description { get; set; }
 
-        [Required]
-        public string Description { get; set; }
+        [StringLength(100, ErrorMessage = "Company name must be under 100 characters.")]
+        public string? Company { get; set; }
 
-        [Required]
-        public string Company { get; set; }
+        [StringLength(100, ErrorMessage = "Location must be under 100 characters.")]
+        public string? Location { get; set; }
 
-        [Required]
-        public string Location { get; set; }
-
-        [Range(0, double.MaxValue, ErrorMessage = "Salary must be positive.")]
-        public decimal Salary { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Salary must be a non-negative number.")]
+        public decimal? Salary { get; set; }
     }
 }

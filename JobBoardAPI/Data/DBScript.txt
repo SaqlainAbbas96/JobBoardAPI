@@ -1,0 +1,20 @@
+CREATE TABLE jobs (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    salary NUMERIC(12, 2) NOT NULL
+);
+
+CREATE TABLE applications (
+    id SERIAL PRIMARY KEY,
+    applicant_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    resume_url TEXT NOT NULL,
+    job_id INT NOT NULL,
+    CONSTRAINT fk_job
+        FOREIGN KEY (job_id)
+        REFERENCES jobs(id)
+        ON DELETE CASCADE
+);

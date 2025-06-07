@@ -29,6 +29,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
 
 var app = builder.Build();
 
@@ -38,6 +40,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles(); // so wwwroot/uploads/ is served automatically
 
 // Log HTTP requests
 app.UseSerilogRequestLogging();

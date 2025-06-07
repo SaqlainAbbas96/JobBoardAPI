@@ -111,34 +111,43 @@ namespace JobBoardAPI.Services
             }
         }
 
-        public async Task<ServiceResult> UpdateJobAsync(UpdateJobDto dto)
+        public async Task<ServiceResult> UpdateJobAsync(int id, UpdateJobDto dto)
         {
-            _logger.LogInformation("Updating job with ID: {Id}", dto.Id);
+            _logger.LogInformation("Updating job with ID: {Id}", id);
 
             try
             {
-                var job = await _jobRepository.GetByIdAsync(dto.Id);
+                var job = await _jobRepository.GetByIdAsync(id);
                 if (job == null)
                 {
-                    _logger.LogWarning("Job not found with ID: {Id}", dto.Id);
+                    _logger.LogWarning("Job not found with ID: {Id}", id);
                     return ServiceResult.Fail("Job not found for the provided id.");
                 }
 
-                // Manual mapping
-                job.title = dto.Title;
-                job.description = dto.Description;
-                job.company = dto.Company;
-                job.location = dto.Location;
-                job.salary = dto.Salary;
+                // Map DTO to Model class
+                if (dto.Title != null)
+                    job.title = dto.Title;
+
+                if (dto.Description != null)
+                    job.description = dto.Description;
+
+                if (dto.Company != null)
+                    job.company = dto.Company;
+
+                if (dto.Location != null)
+                    job.location = dto.Location;
+
+                if (dto.Salary != null)
+                    job.salary = (decimal)dto.Salary;
 
                 await _jobRepository.UpdateAsync(job);
 
-                _logger.LogInformation("Job updated successfully with ID: {Id}", dto.Id);
+                _logger.LogInformation("Job updated successfully with ID: {Id}", id);
                 return ServiceResult.Ok("Job updated successfully.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception while updating job with ID: {Id}", dto.Id);
+                _logger.LogError(ex, "Exception while updating job with ID: {Id}", id);
                 return ServiceResult.Fail($"An error occurred while updating the job: {ex.Message}");
             }
         }
